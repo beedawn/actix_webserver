@@ -1,4 +1,4 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use std::fs;
 use std::path::PathBuf;
 use std::path::Path;
@@ -8,10 +8,9 @@ fn read_files_convert_html_list (user_path:String)->String{
     //mutable string to build over course of function
     let mut path_string:String = "".to_owned();
     //vector to append results to
-    let mut return_vec:Vec<PathBuf>=vec![];
         //loops through each of the files 
     //throws error if file is wrong
-    let mut path_vector: Vec<PathBuf>= read_files_vec(vec![PathBuf::from(user_path.clone())]);
+    let path_vector: Vec<PathBuf>= read_files_vec(vec![PathBuf::from(user_path.clone())]);
     //loops through items in return_vec, and renders the html to return
     for item in path_vector.clone(){
         //checks if path is dir, if so, no hyperlink
@@ -28,12 +27,11 @@ fn read_files_convert_html_list (user_path:String)->String{
 }
 
  fn read_serve_files_as_bytes (user_path:String) -> Vec<u8> {
-        let result:Vec<u8>=vec![];
         let file = fs::read(user_path);
 
         match file{
             Ok(file) => file,
-            Err(err) => (format!("File not found. Error:{}",err).into())
+            Err(err) => format!("File not found. Error:{}",err).into()
         //could add something here to have a directory page populate
     }
 }
@@ -48,8 +46,6 @@ fn read_files_vec (user_path_vec:Vec<PathBuf>)->Vec<PathBuf>{
     //so we need to loop over each string in the vector
     //find all the files and directories, collect those, and put them into the same vector
 
-    //mutable string to build over course of function
-    let mut path_string:String = "".to_owned();
     //do we need a veector? yes here we do
     let mut path_vector: Vec<PathBuf>= vec![];
     //loops through each of the files 
@@ -58,7 +54,7 @@ fn read_files_vec (user_path_vec:Vec<PathBuf>)->Vec<PathBuf>{
     for single_path in user_path_vec{
        // println!("{:?}",single_path);
         //need error handling here for if a file is not a dir
-        if let Ok(entry) = fs::read_dir(single_path.clone()){
+        if let Ok(_entry) = fs::read_dir(single_path.clone()){
         for entry in fs::read_dir(single_path.clone()).unwrap() {
             //unwraps entry into the path
             let entry_path = entry.unwrap().path();
@@ -100,15 +96,15 @@ async fn gremlin() -> impl Responder {
         //no error, index.html path exists
         Ok(html) => HttpResponse::Ok().content_type("text/html").body(html),
         //if index does not exist, go check if 404 page exists
-        Err(err) => match error_page {
+        Err(_err) => match error_page {
             //sends 404 error page
             Ok(error_page) => HttpResponse::Ok().content_type("text/html").body(error_page),
             //text displayed if both 404 page and index cannot be found
-            Err(err)=> HttpResponse::Ok().body(error_var),
+            Err(err)=> HttpResponse::Ok().body(format!("{}, Error: {}", error_var,err)),
         }
     }
 }
- async fn file_render_manual(path: web::Path<(String)>)->HttpResponse{
+ async fn file_render_manual(path: web::Path<String>)->HttpResponse{
     let string = format!(".{}",path.clone());
     let bytes = read_serve_files_as_bytes(string);
     HttpResponse::Ok().body(bytes)
@@ -124,7 +120,7 @@ async fn error_page() -> impl Responder {
         //404.html exists
         Ok(error_file) => HttpResponse::Ok().content_type("text/html").body(error_file),
         //404.html does not exist
-        Err(err) => HttpResponse::Ok().body("File not found")
+        Err(err) => HttpResponse::Ok().body(format!("File not found. Error: {}",err))
     }
 }
 
@@ -134,19 +130,17 @@ async fn error_page() -> impl Responder {
 fn config(cfg: &mut web::ServiceConfig) {
     //need to write a loop here that gets the file names and then creates an end point and
     //serves it at each end point
-   let mut path_vec= read_files_vec(vec![PathBuf::from("./html")]);
-    let mut x = 5;
+   let path_vec= read_files_vec(vec![PathBuf::from("./html")]);
     //loops through each item in path_vec and creates an endpoint for it
     for item in path_vec {
     let mut s = item.display().to_string();
-        if s.len() > 0 {
+        if !s.is_empty() {
         s.remove(0);
         }
-    cfg.service(web::resource(format!("{}",s))
+    cfg.service(web::resource(s.to_string())
         .route(web::get().to(move|| file_render_manual(s.clone().into())))
-        .route(web::head().to(|| HttpResponse::MethodNotAllowed()))
+        .route(web::head().to( HttpResponse::MethodNotAllowed))
     );
-    x-=1;
     }
 }
 
