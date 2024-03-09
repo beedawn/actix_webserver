@@ -38,23 +38,6 @@ fn read_files_convert_html_list (user_path:String)->String{
     }
 }
 
-fn read_files_string (user_path:String)->String{
-    let mut path_string:String = "".to_owned();
-    for entry in fs::read_dir(user_path.clone()).unwrap() {
-    let entry_path = entry.unwrap().path();
-    let entry_path_string = entry_path.display().to_string();
-        if let Ok(entry) = fs::read_dir(user_path.clone()) {
-            if Path::new(&entry_path_string).is_dir() {
-                path_string.push_str(read_files_string(entry_path_string.clone()).as_str());
-            }
-        }else{
-            println!("Error reading file directory");
-        }
-        path_string.push_str(entry_path_string.as_str());
-    }
-path_string
-}
-
 //the goal of this function is to take a string which is a path,
 //then function then searchs for each file and directory recursively
 // and converts their paths into a vector of PathBuf
