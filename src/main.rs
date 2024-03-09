@@ -5,16 +5,13 @@ use std::path::Path;
 //reads files and returns a string with them hyperlinked to their file paths relative to the host
 //does not serve the files, just reads
 fn read_files_convert_html_list (user_path:String)->String{
-
     //mutable string to build over course of function
     let mut path_string:String = "".to_owned();
     //vector to append results to
     let mut return_vec:Vec<PathBuf>=vec![];
         //loops through each of the files 
     //throws error if file is wrong
-
     let mut path_vector: Vec<PathBuf>= read_files_vec(vec![PathBuf::from(user_path.clone())]);
-
     //loops through items in return_vec, and renders the html to return
     for item in path_vector.clone(){
         //checks if path is dir, if so, no hyperlink
@@ -43,27 +40,20 @@ fn read_files_convert_html_list (user_path:String)->String{
 
 fn read_files_string (user_path:String)->String{
     let mut path_string:String = "".to_owned();
-    
     for entry in fs::read_dir(user_path.clone()).unwrap() {
-
     let entry_path = entry.unwrap().path();
     let entry_path_string = entry_path.display().to_string();
         if let Ok(entry) = fs::read_dir(user_path.clone()) {
             if Path::new(&entry_path_string).is_dir() {
                 path_string.push_str(read_files_string(entry_path_string.clone()).as_str());
-
             }
         }else{
             println!("Error reading file directory");
-
         }
         path_string.push_str(entry_path_string.as_str());
     }
-
 path_string
-
 }
-
 
 //the goal of this function is to take a string which is a path,
 //then function then searchs for each file and directory recursively
@@ -74,7 +64,6 @@ path_string
 fn read_files_vec (user_path_vec:Vec<PathBuf>)->Vec<PathBuf>{
     //so we need to loop over each string in the vector
     //find all the files and directories, collect those, and put them into the same vector
-
 
     //mutable string to build over course of function
     let mut path_string:String = "".to_owned();
@@ -126,19 +115,6 @@ fn read_files_vec (user_path_vec:Vec<PathBuf>)->Vec<PathBuf>{
     path_vector
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 // slash route returns "irectory of files
 #[get("/")]
 async fn directory() -> impl Responder {
@@ -168,10 +144,6 @@ async fn gremlin() -> impl Responder {
         }
     }
 }
-
-
-
-
  async fn file_render_manual(path: web::Path<(String)>)->HttpResponse{
     let string = format!(".{}",path.clone());
    //let string= read_files(string);
@@ -182,7 +154,6 @@ async fn gremlin() -> impl Responder {
     HttpResponse::Ok().body(bytes)
 
 }
-
     
 //404 error page for default service to handle all unaddressed endpoints
 async fn error_page() -> impl Responder {
@@ -201,22 +172,15 @@ async fn error_page() -> impl Responder {
 //do we need a loop here to create all the end points?
 //the one bummer about this config is that it needs restarted everytime the app runs
 fn config(cfg: &mut web::ServiceConfig) {
-
     //need to write a loop here that gets the file names and then creates an end point and
     //serves it at each end point
-    //
-    //
    let mut path_vec= read_files_vec(vec![PathBuf::from("./html")]);
     let mut x = 5;
     for item in path_vec {
-   // println!("{}",format!("{:?}",item.display().to_string()));
-
     let mut s = item.display().to_string();
         if s.len() > 0 {
         s.remove(0);
         }
-       // println!("{}",s);
-
     cfg.service(web::resource(format!("{}",s))
         .route(web::get().to(move|| file_render_manual(s.clone().into())))
         .route(web::head().to(|| HttpResponse::MethodNotAllowed()))
