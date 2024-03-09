@@ -85,33 +85,15 @@ fn read_files_vec (user_path_vec:Vec<PathBuf>)->Vec<PathBuf>{
                 // println!("{:?}",entry_path);
                 // checks if entry is a directory
                 if Path::new(&entry_path_string).is_dir(){
-                    //prints out found directories
-                    //println!("{} is dir", entry_path_string);
                     //recursively calls read_files
                     //need to figureout if we should move to vector or keep string 
-              
-                    //throws compile error, need to figure out 
-                
-                    // path_string.push_str(read_files_vec(entry_path_string.clone()).as_str());
-                   // read_files_vec(entry_path_string)
-                    // path_vector.push(entry_path.clone());
                     let mut vec1 = read_files_vec(vec![entry_path.clone()]);
-
-
                     path_vector.append(&mut vec1);
                 }
-                    
-                 // path_vector.push(entry_path.clone());
-            
-            // path_string.push_str(format!("<p><a href=\"{}\">{}</a></p>\n",entry_path_string,entry_path_string).as_str());
             path_vector.append(&mut vec![entry_path.clone()]);
          }
         }
     }
-   // println!("{:?}",path_vector);
-
-    //this is just here to get this to compile, the vec part
-    //vec![path_string]
     path_vector
 }
 
@@ -119,7 +101,6 @@ fn read_files_vec (user_path_vec:Vec<PathBuf>)->Vec<PathBuf>{
 #[get("/")]
 async fn directory() -> impl Responder {
     let html_paths:String = read_files_convert_html_list(String::from("./html"));
-   // println!("VECTOR::::{:?}", read_files_vec(vec![PathBuf::from("./html")]));
     HttpResponse::Ok().body(html_paths)
 }
 //test of error handling if file exists/did not exist
@@ -146,11 +127,7 @@ async fn gremlin() -> impl Responder {
 }
  async fn file_render_manual(path: web::Path<(String)>)->HttpResponse{
     let string = format!(".{}",path.clone());
-   //let string= read_files(string);
-   // println!("{}",string);
     let bytes = read_serve_files_as_bytes(string);
-//println!("path:{}",path);
-  //  HttpResponse::Ok().body(format!("User detail: {} {}", path.into_inner(),string))
     HttpResponse::Ok().body(bytes)
 
 }
@@ -176,6 +153,7 @@ fn config(cfg: &mut web::ServiceConfig) {
     //serves it at each end point
    let mut path_vec= read_files_vec(vec![PathBuf::from("./html")]);
     let mut x = 5;
+    //loops through each item in path_vec and creates an endpoint for it
     for item in path_vec {
     let mut s = item.display().to_string();
         if s.len() > 0 {
