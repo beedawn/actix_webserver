@@ -146,20 +146,6 @@ async fn directory() -> impl Responder {
    // println!("VECTOR::::{:?}", read_files_vec(vec![PathBuf::from("./html")]));
     HttpResponse::Ok().body(html_paths)
 }
-//provides chicken picture to /chicken end point
-// used in 404.html 
-//#[get("/chicken")]
-//async fn chicken() -> impl Responder {
-  //  let chicken = fs::read("./imgs/lost_chicken.jpeg");
-//check if chicken file read was success
-   // match chicken {
-        //if success, return the chicken
-     //   Ok(chicken) => HttpResponse::Ok().body(chicken),
-        //no success, chicken is secret
-       // Err(err) => HttpResponse::Ok().body(format!("Image not found, {}", err))
-   // }
-//}
-
 //test of error handling if file exists/did not exist
 #[get("/gremlin")]
 async fn gremlin() -> impl Responder {
@@ -183,27 +169,7 @@ async fn gremlin() -> impl Responder {
     }
 }
 
-//echos post request
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
-// responder for /hey endpoint
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
-}
-//responder for /pizza endpoint
-async fn pizza_time() -> impl Responder {
-    HttpResponse::Ok().body("<a href='http://www.pizza.com'>pizza</a>")
-}
-//responder for /unsaf_gremlin endpoint
-async fn unsaf_gremlin() -> impl Responder {
-    //if this cannot read index.html, it will crash the server
-    let html = fs::read_to_string("./html/index.html").expect("Cannot read file");
-    HttpResponse::Ok()
-        .content_type("text/html")
-        .body(html)
-}
+
 
 
  async fn file_render_manual(path: web::Path<(String)>)->HttpResponse{
@@ -230,15 +196,7 @@ async fn error_page() -> impl Responder {
         Err(err) => HttpResponse::Ok().body("File not found")
     }
 }
-#[get("/html/{id}")]
-async fn file_render(path: web::Path<(String)>) -> HttpResponse {
-    let string = format!("./html/{}",path.clone());
-   //let string= read_files(string);
-    let bytes = read_serve_files_as_bytes(string);
-  //  HttpResponse::Ok().body(format!("User detail: {} {}", path.into_inner(),string))
-    HttpResponse::Ok().body(bytes)
 
-}
 //modular route configuration,
 //do we need a loop here to create all the end points?
 //the one bummer about this config is that it needs restarted everytime the app runs
@@ -276,16 +234,6 @@ async fn main() -> std::io::Result<()> {
             .configure(config)
             //slash / endpoint
             .service(directory)
-            // /echo endpoint
-            .service(echo)
-            //slash /gremlin endpoint
-            .service(gremlin)
-            // /chicken endpoint
-            //.service(chicken)
-            .service(file_render)
-            .route("/hey", web::get().to(manual_hello))
-            .route("/pizza", web::get().to(pizza_time))
-            .route("/unsaf_gremlin",web::get().to(unsaf_gremlin))
             //handles all unaddressed endpoints
         .default_service(
         web::route().to(error_page)
