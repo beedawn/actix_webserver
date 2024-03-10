@@ -79,10 +79,12 @@ fn read_files_vec (user_path_vec:Vec<PathBuf>)->Vec<PathBuf>{
 // slash route returns "irectory of files
 #[get("/")]
 async fn directory() -> impl Responder {
+
     let html_paths:String = read_files_convert_html_list(String::from("./html"));
     HttpResponse::Ok().body(html_paths)
 }
 //test of error handling if file exists/did not exist
+//not needed just kept as reference for future error proofing POC
 #[get("/gremlin")]
 async fn gremlin() -> impl Responder {
     //error message if neither index.html or 404.html file(s) is(are) not found
@@ -104,11 +106,32 @@ async fn gremlin() -> impl Responder {
         }
     }
 }
+
+
+
+
  async fn file_render_manual(path: web::Path<String>)->HttpResponse{
     let string = format!(".{}",path.clone());
-    let bytes = read_serve_files_as_bytes(string);
-    HttpResponse::Ok().body(bytes)
+    let string_split = string.split("/");
+    let mut parent_dir = vec![];
+    for item in string_split{
+        println!("{}",item);
+        let dot_split = item.split('.');
+        let dot_split = dot_split.collect::<Vec<&str>>();
+        println!("{}",dot_split.len()); 
+        if dot_split.len()<2{
+        parent_dir.push(item);
+        }
+    }
 
+    println!("{:?}",parent_dir);
+    let mut bytes:Vec<u8> = vec![];
+    for given_path in parent_dir{
+     bytes.append(&mut read_files_convert_html_list(given_path.clone().to_string()).as_bytes().to_vec());
+        println!("{}",string.clone());
+    bytes.append(&mut read_serve_files_as_bytes(string.clone()));
+    }
+ HttpResponse::Ok().body(bytes)
 }
     
 //404 error page for default service to handle all unaddressed endpoints
