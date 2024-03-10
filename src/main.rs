@@ -112,6 +112,9 @@ async fn gremlin() -> impl Responder {
 
  async fn file_render_manual(path: web::Path<String>)->HttpResponse{
     let string = format!(".{}",path.clone());
+
+
+    //begin directory nonsense
     let string_split = string.split("/");
     let mut parent_dir = vec![];
     for item in string_split{
@@ -126,11 +129,13 @@ async fn gremlin() -> impl Responder {
 
     println!("{:?}",parent_dir);
     let mut bytes:Vec<u8> = vec![];
-    for given_path in parent_dir{
-     bytes.append(&mut read_files_convert_html_list(given_path.clone().to_string()).as_bytes().to_vec());
-        println!("{}",string.clone());
+   // for given_path in parent_dir{
+    // bytes.append(&mut read_files_convert_html_list(given_path.clone().to_string()).as_bytes().to_vec());
+      //  println!("{}",string.clone());
+
+        //end nonsense
     bytes.append(&mut read_serve_files_as_bytes(string.clone()));
-    }
+  //  }
  HttpResponse::Ok().body(bytes)
 }
     
